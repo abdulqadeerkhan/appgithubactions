@@ -1,0 +1,33 @@
+name: Python CI # This is a GitHub Actions workflow name
+
+on:  # push is an event which triggers the workflow
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs: # Jobs = What tasks to run (Group of tasks)
+  test: # A single job named "test"
+    runs-on: ubuntu-latest # ubuntu-latest is the runner (can also specify windows or macOS)
+
+    steps: # Steps = How to run each task
+      - name: Checkout code
+        uses: actions/checkout@v2 # Reusable GitHub Action to pull code
+
+      # Step 2: Set up Python environment
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # Step 4: Run tests
+      - name: Run test
+        run: pytest
