@@ -3,13 +3,12 @@ name: Build and Upload Scala Spark Job to Databricks
 on:
   push:
     branches:
-      - dev    # Trigger on 'dev' branch push
-      - stage  # Trigger on 'stage' branch push
-      - prod   # Trigger on 'prod' branch push
+      - dev  # Automatically run on push to dev branch
+
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Select the environment'
+        description: 'Select environment to deploy'
         required: true
         default: 'dev'
         type: choice
@@ -20,69 +19,70 @@ on:
 
 jobs:
   build_and_upload:
-    runs-on: ubuntu-latest  # GitHub Action runs on Ubuntu
+    runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout code
       - name: Checkout code
         uses: actions/checkout@v2
 
-      # Step 2: Set up Java (Scala dependencies)
       - name: Set up JDK 8
         uses: actions/setup-java@v2
         with:
           java-version: '8'
 
-      # Step 3: Set up Maven (Scala Build Tool)
       - name: Set up Maven
         uses: actions/setup-java@v2
         with:
           java-version: '8'
           maven-version: '3.8.1'
 
-      # Step 4: Install dependencies and build the JAR using Maven
       - name: Build JAR with Maven
-        run: mvn clean package -DskipTests   # Skip tests during packaging
+        run: mvn clean package -DskipTests
 
-      # Step 5: Set environment-specific variables (Dev, Stage, Prod)
       - name: Set environment variables
         id: set_env
         run: |
-          if [[ "${{ github.ref }}" == "refs/heads/dev" ]]; then
+          # If triggered by a push to dev
+          if [[ "${{ github.event_name }}" == "push" ]]; then
             echo "ENV=dev" >> $GITHUB_ENV
             echo "DATABRICKS_INSTANCE=${{ secrets.DATABRICKS_DEV_INSTANCE }}" >> $GITHUB_ENV
             echo "DATABRICKS_TOKEN=${{ secrets.DATABRICKS_DEV_TOKEN }}" >> $GITHUB_ENV
             echo "DATABRICKS_CLUSTER_ID=${{ secrets.DATABRICKS_DEV_CLUSTER_ID }}" >> $GITHUB_ENV
-          elif [[ "${{ github.ref }}" == "refs/heads/stage" ]]; then
+          # If triggered manually
+          elif [[ "${{ github.event.inputs.environment }}" == "dev" ]]; then
+            echo "ENV=dev" >> $GITHUB_ENV
+            echo "DATABRICKS_INSTANCE=${{ secrets.DATABRICKS_DEV_INSTANCE }}" >> $GITHUB_ENV
+            echo "DATABRICKS_TOKEN=${{ secrets.DATABRICKS_DEV_TOKEN }}" >> $GITHUB_ENV
+            echo "DATABRICKS_CLUSTER_ID=${{ secrets.DATABRICKS_DEV_CLUSTER_ID }}" >> $GITHUB_ENV
+          elif [[ "${{ github.event.inputs.environment }}" == "stage" ]]; then
             echo "ENV=stage" >> $GITHUB_ENV
             echo "DATABRICKS_INSTANCE=${{ secrets.DATABRICKS_STAGE_INSTANCE }}" >> $GITHUB_ENV
             echo "DATABRICKS_TOKEN=${{ secrets.DATABRICKS_STAGE_TOKEN }}" >> $GITHUB_ENV
             echo "DATABRICKS_CLUSTER_ID=${{ secrets.DATABRICKS_STAGE_CLUSTER_ID }}" >> $GITHUB_ENV
-          elif [[ "${{ github.ref }}" == "refs/heads/prod" ]]; then
+          elif [[ "${{ github.event.inputs.environment }}" == "prod" ]]; then
             echo "ENV=prod" >> $GITHUB_ENV
             echo "DATABRICKS_INSTANCE=${{ secrets.DATABRICKS_PROD_INSTANCE }}" >> $GITHUB_ENV
             echo "DATABRICKS_TOKEN=${{ secrets.DATABRICKS_PROD_TOKEN }}" >> $GITHUB_ENV
             echo "DATABRICKS_CLUSTER_ID=${{ secrets.DATABRICKS_PROD_CLUSTER_ID }}" >> $GITHUB_ENV
           fi
 
-      # Step 6: Upload JAR to Databricks DBFS
-      - name: Upload JAR file to Databricks
+      - name: Upload JAR to DBFS
         run: |
-          JAR_PATH="target/scala-2.12/your-jar-file.jar"  # Path to the built JAR
+          JAR_PATH="target/scala-2.12/your-jar-file.jar"  # Replace with actual path
           curl -X POST \
-            -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN }}" \
+            -H "Authorization: Bearer $DATABRICKS_TOKEN" \
             -F "file=@$JAR_PATH" \
-            https://$DATABRICKS_INSTANCE/api/2.0/dbfs/put \
-            -d "path=/dbfs/tmp/your-jar-file.jar"
+            "https://$DATABRICKS_INSTANCE/api/2.0/dbfs/put?overwrite=true&path=/tmp/your-jar-file.jar"
 
-      # Step 7: Trigger Spark job on Databricks using environment-specific cluster
-      - name: Trigger Spark job on Databricks
+      - name: Run Spark Job on Databricks
         run: |
           curl -X POST \
-            -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN }}" \
+            -H "Authorization: Bearer $DATABRICKS_TOKEN" \
+            -H "Content-Type: application/json" \
             -d '{
-                  "run_name": "Scala Spark Job - ${{ github.ref }}",
-                  "existing_cluster_id": "$DATABRICKS_CLUSTER_ID",  # Use environment-specific cluster ID
-                  "libraries": [{"jar": "/dbfs/tmp/your-jar-file.jar"}],
+                  "run_name": "Scala Spark Job - '"$ENV"'",
+                  "existing_cluster_id": "'"$DATABRICKS_CLUSTER_ID"'",
+                  "libraries": [{"jar": "dbfs:/tmp/your-jar-file.jar"}],
                   "timeout_seconds": 3600
                 }' \
+            "https://$DATABRICKS_INSTANCE/api/2.1/jobs/runs/submit"
