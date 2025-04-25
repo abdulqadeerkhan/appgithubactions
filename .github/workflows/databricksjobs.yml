@@ -3,7 +3,7 @@ name: Build and Upload Scala Spark Job to Databricks
 on:
   push:
     branches:
-      - dev  # Automatically run on push to dev branch
+      - main  # Automatically run on push to dev branch
 
   workflow_dispatch:
     inputs:
