@@ -1,8 +1,8 @@
-name: Schedule work to trigger at specific time
+name: Schedule work to trigger at specific time1
 
 on:
   schedule:
-    - cron: '* * * * *'  # Runs every minute
+    - cron: '5 * * * *'  # Runs every minute
 
 jobs:
   hello_world:
