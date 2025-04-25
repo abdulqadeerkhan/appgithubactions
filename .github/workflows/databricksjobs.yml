@@ -1,4 +1,4 @@
-name: Build and Upload Scala Spark Job to Databricks
+name: Build and Upload Scala Spark Job to Databricks 
 
 on:
   push:
