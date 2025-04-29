@@ -1,0 +1,18 @@
+name: "conditionalworkflow"
+
+on:
+  push:
+
+jobs:
+  Hello_World:
+    if: github.repository == 'main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: "hello_world"
+        run: echo "hello world"
+
+  goodbye-moon:
+    runs-on: ubuntu-latest
+    steps: 
+      - name: "goodbye-moon"
+        run: echo "goodbye moon"
