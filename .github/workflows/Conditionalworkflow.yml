@@ -5,7 +5,7 @@ on:
 
 jobs:
   Hello_World:
-    if: github.repository == 'main'
+    if: github.repository == 'appgithubactions'
     runs-on: ubuntu-latest
     steps:
       - name: "hello_world"
