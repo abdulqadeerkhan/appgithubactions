@@ -1,29 +1,42 @@
-name:"Expreesion function"
+name: "Expression function"
+
 on:
-push:
-branches:
-- main:
+  push:
+    branches:
+      - main
+
 jobs:
-Expression_functions:
-steps:
-- name:check if string contains substrings
-if:contains("Hello world","ello")
-run:echo "the string contains substrings"
-- name:check if string ends with 
-if:endswith("helloworld","ld")
-run: echo "string ends with ld"
-- name:format and echo string
-run:echo ${{ format{'Hello {0} {1} {2}','mona', 'the', 'octate'} }}
-- name:join issue lables
-if:github.event_name=='issues'
-run:echo 'issue labels:${{ join{github.event.issues.labels.".name, ','} }}"
-- name:convert job context to json
-run:echo "job context in json:${{ toJSON(github.job) }}"
-- name:parse json context
-run:echo "from json ${{ fromJSON('{"hello":"world"}").hello }}"
-- name:hash files
-run:"hash of files ${{ hashfiles(' ""/package-lock.json','""/Gemfile.lock') }}
-- name: the job has succeeded
-if:${{success()}}
-- name:the job has failed
-if:${{failure()}}
+  Expression_functions:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check if string contains substrings
+        if: ${{ contains('Hello world', 'ello') }}
+        run: echo "The string contains substrings"
+
+      - name: Check if string ends with
+        if: ${{ endsWith('helloworld', 'ld') }}
+        run: echo "String ends with ld"
+
+      - name: Format and echo string
+        run: echo "${{ format('Hello {0} {1} {2}', 'mona', 'the', 'octate') }}"
+
+      - name: Join issue labels
+        if: ${{ github.event_name == 'issues' }}
+        run: echo "Issue labels: ${{ join(github.event.issue.labels.*.name, ',') }}"
+
+      - name: Convert job context to JSON
+        run: echo "Job context in JSON: ${{ toJSON(github.job) }}"
+
+      - name: Parse JSON context
+        run: echo "From JSON: ${{ fromJSON('{\"hello\":\"world\"}').hello }}"
+
+      - name: Hash files
+        run: echo "Hash of files: ${{ hashFiles('package-lock.json', 'Gemfile.lock') }}"
+
+      - name: The job has succeeded
+        if: ${{ success() }}
+        run: echo "The job has succeeded"
+
+      - name: The job has failed
+        if: ${{ failure() }}
+        run: echo "The job has failed"
