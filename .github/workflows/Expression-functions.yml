@@ -27,7 +27,7 @@ jobs:
       - name: Convert job context to JSON
         run: echo "Job context in JSON: ${{ toJSON(github.job) }}"
 
-        - name: Parse JSON context
+      - name: Parse JSON context
         run: echo 'From JSON: ${{ fromJSON("{\"hello\":\"world\"}").hello }}'
 
       - name: Hash files
@@ -35,8 +35,4 @@ jobs:
 
       - name: The job has succeeded
         if: ${{ success() }}
-        run: echo "The job has succeeded"
-
-      - name: The job has failed
-        if: ${{ failure() }}
-        run: echo "The job has failed"
+        run: echo "The job has
