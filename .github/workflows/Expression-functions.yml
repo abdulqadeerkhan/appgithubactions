@@ -20,6 +20,10 @@ jobs:
       - name: Format and echo string
         run: echo "${{ format('Hello {0} {1} {2}', 'mona', 'the', 'octate') }}"
 
+      - name: Join issue labels (example fallback)
+        if: ${{ github.event_name == 'issues' }}
+        run: echo "Issue labels join logic would go here."
+
       - name: Convert job context to JSON
         run: echo "Job context in JSON: ${{ toJSON(github.job) }}"
 
