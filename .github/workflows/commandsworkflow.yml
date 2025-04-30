@@ -13,3 +13,9 @@ jobs:
           echo "msg1"
           echo "msg2"
           echo "::endgroup::"
+
+      - name: Step 1 - Set Environment Variable
+        run: echo "My_Val_Hello=hello_world" >> $GITHUB_ENV
+
+      - name: Step 2 - Use Environment Variable
+        run: echo "$My_Val_Hello"
