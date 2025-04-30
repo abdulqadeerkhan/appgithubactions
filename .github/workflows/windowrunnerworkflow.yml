@@ -1,30 +1,36 @@
-name:windows runner
+name: Windows Runner
+
 on:
-push:
-branches:
-- main:
+  push:
+    branches:
+      - main
+
 jobs:
-built-and-test:
-runs-on:windows-latest
-steps:
-- name:check out code
-uses:actions\checkout@v3
-- name:install dependencies
-run:choco install dotnetcore-sdk
-shell:powershell
-- name:compile and run c# code
-run: |
-add-content -path "hello.cs" - value @
-using systems;
-public class hello
-{
-public static void main()
-{
-console.writeline("hello world")
-}
-}
-"@
-dotnet new console --force --no-restore
-Move-Item -path "hello.cs" - Destination "program.cs" -force
-dotnet run
-shell:powershell
+  build-and-test:
+    runs-on: windows-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Install .NET SDK
+        run: choco install dotnetcore-sdk
+        shell: powershell
+
+      - name: Compile and run C# code
+        run: |
+          Add-Content -Path "hello.cs" -Value @"
+          using System;
+
+          public class Hello
+          {
+              public static void Main()
+              {
+                  Console.WriteLine("Hello, world!");
+              }
+          }
+          "@
+
+          dotnet new console --force --no-restore
+          Move-Item -Path "hello.cs" -Destination "Program.cs" -Force
+          dotnet run
+        shell: powershell
