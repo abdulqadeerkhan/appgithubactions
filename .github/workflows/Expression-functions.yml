@@ -25,11 +25,11 @@ jobs:
         run: echo "Issue labels join logic would go here."
 
       - name: Convert job context to JSON
-        run: echo "from json ${{ fromJSON('{"hello":"world"}").hello }}"
+        run:echo "from json ${{ fromJSON('{"hello":"world"}").hello }}"
 
       - name: Hash files
         run: echo "Hash of files: ${{ hashFiles('package-lock.json', 'Gemfile.lock') }}"
 
       - name: The job has succeeded
         if: ${{ success() }}
-        run: echo "The job has
+        run: echo "The job has succeeded"
