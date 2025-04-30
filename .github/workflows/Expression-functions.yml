@@ -1,0 +1,29 @@
+name:"Expreesion function"
+on:
+push:
+branches:
+- main:
+jobs:
+Expression_functions:
+steps:
+- name:check if string contains substrings
+if:contains("Hello world","ello")
+run:echo "the string contains substrings"
+- name:check if string ends with 
+if:endswith("helloworld","ld")
+run: echo "string ends with ld"
+- name:format and echo string
+run:echo ${{ format{'Hello {0} {1} {2}','mona', 'the', 'octate'} }}
+- name:join issue lables
+if:github.event_name=='issues'
+run:echo 'issue labels:${{ join{github.event.issues.labels.".name, ','} }}"
+- name:convert job context to json
+run:echo "job context in json:${{ toJSON(github.job) }}"
+- name:parse json context
+run:echo "from json ${{ fromJSON('{"hello":"world"}").hello }}"
+- name:hash files
+run:"hash of files ${{ hashfiles(' ""/package-lock.json','""/Gemfile.lock') }}
+- name: the job has succeeded
+if:${{success()}}
+- name:the job has failed
+if:${{failure()}}
